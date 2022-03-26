@@ -1,5 +1,5 @@
-import { CfnInclude } from '@aws-cdk/cloudformation-include';
-import { App } from '@aws-cdk/core';
+import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
+import { App } from 'aws-cdk-lib';
 import * as fs from 'fs-extra';
 import { AmplifyExportedBackend } from '../src';
 import { Constants } from '../src/constants';
@@ -32,7 +32,7 @@ fs_mock.readFileSync.mockImplementation((filePath, _options) => {
 });
 fs_mock.statSync.mockReturnValue({
   isDirectory: jest.fn().mockReturnValue(true),
-} as unknown as fs.Stats)
+} as unknown as fs.Stats);
 
 jest.mock('../src/export-backend-asset-handler', () => ({
   AmplifyExportAssetHandler: jest.fn().mockReturnValue({
@@ -40,7 +40,7 @@ jest.mock('../src/export-backend-asset-handler', () => ({
     setDependencies: jest.fn(),
   }),
 }));
-jest.mock('@aws-cdk/cloudformation-include');
+jest.mock('aws-cdk-lib/cloudformation-include');
 const cfnInclude_mock = CfnInclude as jest.Mocked<typeof CfnInclude>;
 
 JSON.parse = jest.fn().mockImplementation((val) => {
@@ -70,7 +70,11 @@ describe('test export backend', () => {
     expect(amplifyBackend.rootStack).toBeDefined();
     expect(amplifyBackend.rootStack.stackName).toContain('prod');
 
-    expect(cfnInclude_mock).toBeCalledWith(amplifyBackend.rootStack, 'AmplifyCfnInclude', {});
+    expect(cfnInclude_mock).toBeCalledWith(
+      amplifyBackend.rootStack,
+      'AmplifyCfnInclude',
+      {},
+    );
     expect(amplifyBackend.cfnInclude).toBeDefined;
     amplifyBackend.cfnInclude.getNestedStack = jest.fn().mockReturnValue({});
     const graphqlStack = amplifyBackend.graphqlNestedStacks();
@@ -88,7 +92,9 @@ describe('test export backend', () => {
     const lambdaStack = amplifyBackend.lambdaFunctionNestedStacks();
     expect(lambdaStack).toBeDefined();
     expect(lambdaStack.length).toBe(1);
-    expect(amplifyBackend.cfnInclude.getNestedStack).toBeCalledWith('functionamplifyexportest13c53bd0');
+    expect(amplifyBackend.cfnInclude.getNestedStack).toBeCalledWith(
+      'functionamplifyexportest13c53bd0',
+    );
 
     try {
       amplifyBackend.apiRestNestedStack('noresource');
@@ -96,5 +102,4 @@ describe('test export backend', () => {
       expect(ex).toBeDefined();
     }
   });
-
 });

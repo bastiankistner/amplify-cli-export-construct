@@ -1,8 +1,9 @@
+import * as cdk from 'aws-cdk-lib';
 import {
   CfnInclude,
   IncludedNestedStack,
-} from '@aws-cdk/cloudformation-include';
-import * as cdk from '@aws-cdk/core';
+} from 'aws-cdk-lib/cloudformation-include';
+import { Construct } from 'constructs';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as _ from 'lodash';
 import { AmplifyExportedBackendProps } from './amplify-exported-backend-props';
@@ -14,9 +15,7 @@ import {
   APIRestIncludedStack,
   AuthIncludedNestedStack,
 } from './include-nested-stacks';
-import {
-  LambdaFunctionIncludedNestedStack,
-} from './include-nested-stacks/lambda-function/lambda-function-nested-stack';
+import { LambdaFunctionIncludedNestedStack } from './include-nested-stacks/lambda-function/lambda-function-nested-stack';
 import { CategoryStackMapping } from './types/category-stack-mapping';
 
 const { API_CATEGORY, AUTH_CATEGORY, FUNCTION_CATEGORY } = Constants;
@@ -26,8 +25,7 @@ const { API_CATEGORY, AUTH_CATEGORY, FUNCTION_CATEGORY } = Constants;
  * @example
  * @see <amplify-export-docs-path>
  */
-export class AmplifyExportedBackend
-  extends BaseAmplifyExportedBackend {
+export class AmplifyExportedBackend extends BaseAmplifyExportedBackend {
   /**
    * cfnInclude of the Amplify backend
    */
@@ -43,7 +41,7 @@ export class AmplifyExportedBackend
    * @param props Initialization properties.
    */
   constructor(
-    scope: cdk.Construct,
+    scope: Construct,
     id: string,
     props: AmplifyExportedBackendProps,
   ) {
@@ -70,7 +68,10 @@ export class AmplifyExportedBackend
     const include = new CfnInclude(
       this.rootStack,
       'AmplifyCfnInclude',
-      this.transformTemplateFile(this.exportBackendManifest.props, this.exportPath),
+      this.transformTemplateFile(
+        this.exportBackendManifest.props,
+        this.exportPath,
+      ),
     );
 
     this.cfnInclude = include;
@@ -78,7 +79,6 @@ export class AmplifyExportedBackend
     amplifyExportHandler.setDependencies(include);
 
     this.applyTags(this.rootStack, props.amplifyEnvironment);
-
   }
 
   private applyTags(rootStack: cdk.Stack, env: string = 'dev') {
@@ -152,8 +152,13 @@ export class AmplifyExportedBackend
     );
   }
 
-  nestedStackByCategortService(category: string, service: string) : IncludedNestedStack[] {
-    return this.filterCategory(category, service).map(categoryMapping => this.getCategoryNestedStack(categoryMapping));
+  nestedStackByCategortService(
+    category: string,
+    service: string,
+  ): IncludedNestedStack[] {
+    return this.filterCategory(category, service).map((categoryMapping) =>
+      this.getCategoryNestedStack(categoryMapping),
+    );
   }
 
   /**

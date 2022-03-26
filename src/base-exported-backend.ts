@@ -1,10 +1,8 @@
 import * as path from 'path';
-import { BucketDeployment } from '@aws-cdk/aws-s3-deployment';
-import { Construct, } from '@aws-cdk/core';
+import { BucketDeployment } from 'aws-cdk-lib/aws-s3-deployment';
+import { Construct } from 'constructs';
 import * as fs from 'fs-extra';
-import {
-  CfnIncludeProps,
-} from '@aws-cdk/cloudformation-include';
+import { CfnIncludeProps } from 'aws-cdk-lib/cloudformation-include';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as _ from 'lodash';
 import { Constants } from './constants';
@@ -18,7 +16,11 @@ const {
 } = Constants;
 class AmplifyCategoryNotFoundError extends Error {
   constructor(category: string, service?: string) {
-    super(`The category: ${category}  ${service ? 'of service: ' + service: '' } not found.`);
+    super(
+      `The category: ${category}  ${
+        service ? 'of service: ' + service : ''
+      } not found.`,
+    );
   }
 }
 
@@ -32,7 +34,7 @@ export class BaseAmplifyExportedBackend extends Construct {
   protected exportBackendManifest: ExportManifest;
   protected exportTags: ExportTag[];
   protected auxiliaryDeployment?: BucketDeployment;
-  protected env?: string
+  protected env?: string;
   constructor(
     scope: Construct,
     id: string,
@@ -43,8 +45,7 @@ export class BaseAmplifyExportedBackend extends Construct {
 
     this.env = amplifyEnvironment;
     this.exportPath = this.validatePath(exportPath);
-    
-    
+
     const exportBackendManifest = this.getExportedDataFromFile<ExportManifest>(
       AMPLIFY_EXPORT_MANIFEST_FILE,
     );
@@ -53,50 +54,57 @@ export class BaseAmplifyExportedBackend extends Construct {
       exportBackendManifest,
     );
     this.categoryStackMappings = this.getExportedDataFromFile<
-    CategoryStackMapping[]
+      CategoryStackMapping[]
     >(AMPLIFY_CATEGORY_MAPPING_FILE);
     this.exportTags = this.getExportedDataFromFile<ExportTag[]>(
       AMPLIFY_EXPORT_TAG_FILE,
     );
-
-
   }
   private validatePath(exportPath: string): string {
     const resolvePath = path.resolve(exportPath);
-    if(!fs.existsSync(resolvePath)) {
-      throw new Error(`Could not find path ${resolvePath}`)
+    if (!fs.existsSync(resolvePath)) {
+      throw new Error(`Could not find path ${resolvePath}`);
     }
 
     const stat = fs.statSync(resolvePath);
 
-    if(!stat.isDirectory()){
+    if (!stat.isDirectory()) {
       throw new Error(`The path ${resolvePath} is not a directory`);
     }
 
     return resolvePath;
   }
-  
-  protected transformTemplateFile(cfnIncludeProps: CfnIncludeProps, exportPath: string) : CfnIncludeProps {
-    
-    if(!cfnIncludeProps.loadNestedStacks){
+
+  protected transformTemplateFile(
+    cfnIncludeProps: CfnIncludeProps,
+    exportPath: string,
+  ): CfnIncludeProps {
+    if (!cfnIncludeProps.loadNestedStacks) {
       return cfnIncludeProps;
     }
 
     const newProps: CfnIncludeProps = {
       ...cfnIncludeProps,
       templateFile: path.join(exportPath, cfnIncludeProps.templateFile),
-      loadNestedStacks: cfnIncludeProps.loadNestedStacks ? 
-        Object.keys(cfnIncludeProps.loadNestedStacks).reduce((obj: any, key: string) => {
-          if(cfnIncludeProps.loadNestedStacks &&  key in cfnIncludeProps.loadNestedStacks) {
-            obj[key] = this.transformTemplateFile(cfnIncludeProps.loadNestedStacks[key], exportPath);
-          }
-          return obj;
-        }, {}) : 
-        cfnIncludeProps.loadNestedStacks
+      loadNestedStacks: cfnIncludeProps.loadNestedStacks
+        ? Object.keys(cfnIncludeProps.loadNestedStacks).reduce(
+            (obj: any, key: string) => {
+              if (
+                cfnIncludeProps.loadNestedStacks &&
+                key in cfnIncludeProps.loadNestedStacks
+              ) {
+                obj[key] = this.transformTemplateFile(
+                  cfnIncludeProps.loadNestedStacks[key],
+                  exportPath,
+                );
+              }
+              return obj;
+            },
+            {},
+          )
+        : cfnIncludeProps.loadNestedStacks,
     };
-    
-    
-    
+
     return newProps;
   }
 
@@ -137,7 +145,9 @@ export class BaseAmplifyExportedBackend extends Construct {
   protected getExportedDataFromFile<T>(fileName: string): T {
     const filePath = path.join(this.exportPath, fileName);
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Cannot find ${fileName} in the directory ${this.exportPath}`);
+      throw new Error(
+        `Cannot find ${fileName} in the directory ${this.exportPath}`,
+      );
     }
     return JSON.parse(fs.readFileSync(filePath, { encoding: 'utf-8' })) as T;
   }
@@ -169,7 +179,9 @@ export class BaseAmplifyExportedBackend extends Construct {
 
     for (const parameterKey of parameterKeysToUpdate) {
       if (parameterKey in props.parameters) {
-        props.parameters[parameterKey] = this.modifyEnv(props.parameters[parameterKey]);
+        props.parameters[parameterKey] = this.modifyEnv(
+          props.parameters[parameterKey],
+        );
       } else {
         throw new Error(`${parameterKey} not present in Root Stack Parameters`);
       }

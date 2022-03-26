@@ -1,8 +1,9 @@
 import * as path from 'path';
-import { Bucket, BucketAccessControl, IBucket } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { CfnInclude } from '@aws-cdk/cloudformation-include';
-import { Construct, Stack } from '@aws-cdk/core';
+import { Bucket, BucketAccessControl, IBucket } from 'aws-cdk-lib/aws-s3';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
+import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
+import { Construct } from 'constructs';
+import { Stack } from 'aws-cdk-lib';
 import * as fs from 'fs-extra';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as _ from 'lodash';
@@ -122,7 +123,9 @@ export class AmplifyExportAssetHandler extends Construct {
             break;
 
           case INTERACTIONS_CATEGORY.NAME: {
-            deployment = this.uploadInteractionsLexZip(categoryStack.resourceName);
+            deployment = this.uploadInteractionsLexZip(
+              categoryStack.resourceName,
+            );
           }
         }
 
@@ -138,9 +141,7 @@ export class AmplifyExportAssetHandler extends Construct {
     return this.exportManifest;
   }
 
-  setDependencies(
-    include: CfnInclude,
-  ) {
+  setDependencies(include: CfnInclude) {
     this.categoryStackWithDeployment.forEach((stackMapping) => {
       if (stackMapping.bucketDeployment) {
         const stack = include.getResource(
@@ -156,7 +157,6 @@ export class AmplifyExportAssetHandler extends Construct {
         this.rootStack.node.addDependency(this.auxiliaryDeployment);
       }
     });
-
   }
 
   private createAuxiliaryFileAsset(): BucketDeployment | undefined {
@@ -191,7 +191,6 @@ export class AmplifyExportAssetHandler extends Construct {
       filePath,
       this.validateFilesAndReturnPath(filePath),
     );
-
 
     const deployment = new BucketDeployment(
       this,
@@ -255,7 +254,6 @@ export class AmplifyExportAssetHandler extends Construct {
     }
     return deployment;
   }
-
 
   private uploadLambdaLayerZips(resourceName: string): BucketDeployment {
     const filePath = path.join(

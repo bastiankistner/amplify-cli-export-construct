@@ -1,5 +1,8 @@
-import { CfnInclude, IncludedNestedStack } from '@aws-cdk/cloudformation-include';
-import { NestedStack } from '@aws-cdk/core';
+import {
+  CfnInclude,
+  IncludedNestedStack,
+} from 'aws-cdk-lib/cloudformation-include';
+import { NestedStack } from 'aws-cdk-lib';
 
 export class CfnResourceNotFoundError extends Error {
   constructor(logicalId: string, type: string) {
@@ -18,7 +21,9 @@ export class BaseIncludedStack {
   }
 
   getResourceConstruct<T>(logicalId: string): T {
-    const construct = this.includedTemplate.getResource(logicalId) as unknown as T;
+    const construct = this.includedTemplate.getResource(
+      logicalId,
+    ) as unknown as T;
     if (!construct) {
       throw new CfnResourceNotFoundError(logicalId, typeof construct);
     }

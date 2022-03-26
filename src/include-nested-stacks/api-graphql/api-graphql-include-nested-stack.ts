@@ -1,10 +1,12 @@
-import { CfnApiKey, CfnGraphQLSchema, CfnGraphQLApi } from '@aws-cdk/aws-appsync';
-import { IncludedNestedStack } from '@aws-cdk/cloudformation-include';
+import {
+  CfnApiKey,
+  CfnGraphQLSchema,
+  CfnGraphQLApi,
+} from 'aws-cdk-lib/aws-appsync';
+import { IncludedNestedStack } from 'aws-cdk-lib/cloudformation-include';
 import { BaseIncludedStack } from '../base-included-stack';
 
-
 export class APIGraphQLIncludedNestedStack extends BaseIncludedStack {
-
   /**
    * @returns Appsync Api Key {CfnApiKey} of the auth stack
    * @throws {CfnResourceNotFoundError} if not found
@@ -36,5 +38,4 @@ export class APIGraphQLIncludedNestedStack extends BaseIncludedStack {
   modelNestedStack(tableName: string): IncludedNestedStack {
     return this.includedTemplate.getNestedStack(tableName);
   }
-
 }
