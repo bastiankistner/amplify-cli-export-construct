@@ -1,13 +1,20 @@
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { App, Stack } from 'aws-cdk-lib';
-import * as fs from 'fs-extra';
 import { AmplifyExportAssetHandler } from '../src/export-backend-asset-handler';
 import { manifest_test, stack_mapping_test } from './test-constants';
 
-const fs_mock = { ...fs } as unknown as jest.Mocked<typeof fs>;
-fs_mock.readdirSync = jest.fn().mockReturnValueOnce(['one.zip']);
-fs_mock.existsSync = jest.fn().mockReturnValueOnce(true);
+jest.mock('fs-extra', () => {
+  const fs_mock = jest.createMockFromModule('fs-extra') as jest.Mocked<
+    typeof import('fs-extra')
+  >;
+
+  fs_mock.readdirSync = jest.fn().mockReturnValueOnce(['one.zip']);
+  fs_mock.existsSync = jest.fn().mockReturnValueOnce(true);
+
+  return fs_mock;
+});
+
 jest.mock('aws-cdk-lib/aws-s3-deployment');
 
 jest.mock('aws-cdk-lib/cloudformation-include');
